@@ -12,7 +12,9 @@
       style="width: 100%"
       rows="10"
     ></textarea>
-    <div id="main-midi"></div>
+    <div id="player">
+      <div id="main-midi"></div>
+    </div>
     <div>
       <div id="paper"></div>
     </div>
@@ -40,7 +42,6 @@ B2 G2 A2 | G6 |]`
       
       return {
         control: null,
-        test: "",
         tune: tune,
         constrolOpts: {
           // soundFontUrl: 'https://thesession.org/soundfonts/louder/',
@@ -48,6 +49,7 @@ B2 G2 A2 | G6 |]`
           program: 21,
           chordsOff: true
         },
+        timingCallbacks: null,
         opts: {
           viewportHorizontal: true,
           scrollHorizontal: true,
@@ -59,54 +61,79 @@ B2 G2 A2 | G6 |]`
       }
     },
     mounted: function () {
-			const [visualObj] = abcjs.renderAbc('paper', this.tune, {
-        scale: 1,
-        staffwidth: 700,
-        paddingleft: 0,
-        paddingright: 0,
-        responsive: 'resize',
-        oneSvgPerLine: true
-
-      });
-      const synthControl = new abcjs.synth.SynthController();
-      synthControl.load('#main-midi', null, {
-        displayRestart: true,
-        displayPlay: true,
-        displayProgress: true,
-        displayLoop: true,
-        displayWarp: true,
-      });
-      this.control = synthControl;
-      this.control.setTune(visualObj, false, this.constrolOpts);
+      this.load()
+      
 		},
     watch: {
       tune(v) {
-        console.log('b')
-        const [visualObj] = abcjs.renderAbc('paper', this.tune, {
+        this.control.pause()
+        this.load()
+      },
+    },
+    methods: {
+      load(){
+        const abcObj = abcjs.renderAbc('paper', this.tune, {
           scale: 1,
           staffwidth: 700,
           paddingleft: 0,
           paddingright: 0,
           responsive: 'resize',
-          oneSvgPerLine: true
+          oneSvgPerLine: true,
+          add_classes: true
 
         });
-        console.log(this.tune)
+        const [visualObj] = abcObj
+        var parent = this
+
+        var lastEls = [];
+        var CursorControl = function(){
+            var self = this
+            self.beatSubdivisions = 2;
+            function colorElements(els) {
+              var i;
+              var j;
+              console.log(els)
+              for (i = 0; i < lastEls.length; i++) {
+                for (j = 0; j < lastEls[i].length; j++) {
+                  lastEls[i][j].style.color = ""
+                }
+              }
+              for (i = 0; i < els.length; i++) {
+                for (j = 0; j < els[i].length; j++) {
+                  els[i][j].style.color = "red"
+                }
+              }
+              lastEls = els;
+            }
+            self.onStart = function() {
+              // console.log("The tune has started playing.");
+            }
+            self.onStop = function() {
+              // console.log("stop")
+            }
+            self.onFinished = function() {
+              // console.log("The tune has stopped playing.");
+            }
+            self.onBeat = function(beatNumber, totalBeats, totalTime) {
+            }
+            self.onEvent = function(ev) {
+              colorElements(ev.elements)
+            }
+          }
+        var cursorControl = new CursorControl();
         const synthControl = new abcjs.synth.SynthController();
-        synthControl.load('#main-midi', null, {
-          displayRestart: true,
+        synthControl.load('#main-midi', cursorControl, {
+          displayRestart: false,
           displayPlay: true,
           displayProgress: true,
-          displayLoop: true,
+          displayLoop: false,
           displayWarp: true,
+          showCursor: true,
         });
         this.control = synthControl;
         this.control.setTune(visualObj, false, this.constrolOpts);
-        console.log(this.tune)
-      
-      },
-    },
-    methods: {
+
+      }
     },
     created() {
     }
@@ -133,6 +160,36 @@ body {
 #paper .cursor {
   background-color: #ffffc0;
   opacity: 0.5;
+}
+.abcjs-cursor {
+	stroke: red;
+  width:2px;
+}
+#player {
+  display: flex;
+
+}
+#main-midi{
+  width: 100%
+}
+.color {
+	stroke: #ddd !important;
+	fill: red !important;
+  color: red !important;
+}
+.abcjs-cursor {
+  stroke: blue;
+}
+@media (prefers-color-scheme: dark) {
+  .abcjs-cursor {
+    stroke: #000;
+  }
+}
+path {
+	transition: opacity 1s;
+}
+.abcjs-note.hidden, .abcjs-beam-elem.hidden {
+	opacity: 0;
 }
 
 </style>
