@@ -1,4 +1,7 @@
-
+<script setup>
+import ShareIcon from './components/icons/IconShare.vue'
+import BasicModal from "./components/BasicModal.vue";
+</script>
 
 <template>
   <div id="app" class="container padding-xxxs">
@@ -14,20 +17,26 @@
     ></textarea>
     <div id="player">
       <div id="main-midi"></div>
+     <div class="share">
+       <ShareIcon class="share-icon" v-on:click="showDialog = !showDialog"/>
+     </div>
     </div>
     <div>
       <div id="paper"></div>
     </div>
+    <BasicModal v-if="showDialog" v-model="showDialog" :link="this.link" />
   </div>
 </template>
 
 <script>
 import abcjs from "abcjs";
 import 'abcjs/abcjs-audio.css';
+import { ref } from "vue";
 export default {
     data() {
       const queryString = window.location.search;
       const urlParams = new URLSearchParams(queryString);
+      const showDialog = ref(false);
       let tune = `X: 3
 T:Happy Birthday to You
 M:3/4
@@ -50,6 +59,7 @@ B2 G2 A2 | G6 |]`
           chordsOff: true
         },
         timingCallbacks: null,
+        showDialog: showDialog,
         opts: {
           viewportHorizontal: true,
           scrollHorizontal: true,
@@ -57,6 +67,7 @@ B2 G2 A2 | G6 |]`
           // responsive: 'resize',
           scale: 1,
         },
+        link: `https://cylin743.github.io/concertina-abc-player/?tune=${encodeURIComponent(btoa(tune))}`,
 
       }
     },
@@ -132,6 +143,7 @@ B2 G2 A2 | G6 |]`
         });
         this.control = synthControl;
         this.control.setTune(visualObj, false, this.constrolOpts);
+        this.link = `https://cylin743.github.io/concertina-abc-player/?tune=${encodeURIComponent(btoa(this.tune))}`
 
       }
     },
@@ -171,6 +183,20 @@ body {
 }
 #main-midi{
   width: 100%
+}
+.share-icon {
+  color: red;
+  height: 100%;
+  cursor: pointer;
+}
+.share {
+  /* height: ; */
+  width: 30px;
+  display: flex;
+  justify-content: center;    
+  align-items: center;  
+  align-content: center;
+  /* border: 1px solid #000; */
 }
 .color {
 	stroke: #ddd !important;
