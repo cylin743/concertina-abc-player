@@ -40,11 +40,15 @@
       link: String,
     },
     setup(props, ctx) {
-      const modal = ref(props.link);
+      const modal = ref();
   
       const innerModelValue = computed({
         get: () => props.modelValue,
         set: (value) => ctx.emit("update:model-value", value),
+      });
+      const innerLink = computed({
+        get: () => props.link,
+        set: (value) => ctx.emit("update:link", value),
       });
   
       const displayModal = (show) => {
@@ -58,7 +62,6 @@
   
       onMounted(() => {
         if (innerModelValue.value) displayModal(true);
-        console.log(props.link)
       });
   
       watch(innerModelValue, (isOpen) => {
@@ -81,7 +84,7 @@
         displayModal,
         innerModelValue,
         handleClickOutSide,
-        link: props.link
+        link: innerLink
       };
     },
     methods:{

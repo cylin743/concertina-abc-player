@@ -24,7 +24,7 @@ import BasicModal from "./components/BasicModal.vue";
     <div>
       <div id="paper"></div>
     </div>
-    <BasicModal v-if="showDialog" v-model="showDialog" :link="this.link" />
+    <BasicModal v-if="showDialog" v-model="showDialog" :link="link" />
   </div>
 </template>
 
