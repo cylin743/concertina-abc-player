@@ -8,13 +8,27 @@ import BasicModal from "./components/BasicModal.vue";
     <div class="text-center margin-bottom-sm">
       <h1>Concertina Player</h1>
     </div>
-    <textarea
-      spellcheck="false"
-      v-model="tune"
-      class="note-input margin-top-sm padding-x-md"
-      style="width: 100%"
-      rows="10"
-    ></textarea>
+    <div class="accordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingOne">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            Editor
+          </button>
+        </h2>
+        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+          <div class="accordion-body">
+            <textarea
+              spellcheck="false"
+              v-model="tune"
+              class="note-input margin-top-sm padding-x-md"
+              style="width: 100%"
+              rows="10"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <div id="player">
       <div id="main-midi"></div>
      <div class="share">
