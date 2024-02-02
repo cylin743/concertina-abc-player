@@ -296,6 +296,17 @@ B2 G2 A2 | G6 |]`
                 scale = "^f"
               }
               break
+            case 'F':
+              if(scale == "b"){
+                scale = "_b"
+              }
+              if(scale == "B"){
+                scale = "_B"
+              }
+              if(scale == "B,"){
+                scale = "_B,"
+              }
+              break
           }
           return scale
         }
