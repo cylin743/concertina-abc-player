@@ -267,7 +267,6 @@ B2 G2 A2 | G6 |]`
           this.concertina[k] = "#bbb"
         })
         const key = abcObj[0].lines[0].staff[0].key.root;
-        console.log(key);
         const [visualObj] = abcObj
         var parent = this
 
@@ -319,6 +318,8 @@ B2 G2 A2 | G6 |]`
             var self = this
             self.beatSubdivisions = 2;
             function colorElements(els) {
+              var needPull = false
+              var needPush = false
               var i;
               var j;
               for (i = 0; i < lastEls.length; i++) {
@@ -331,6 +332,14 @@ B2 G2 A2 | G6 |]`
                 for (j = 0; j < els[i].length; j++) {
                   els[i][j].style.color = "red"
                   for (var k = 0; k < els[i][j].children.length; k ++){
+                    if(els[i][j].children[k].dataset.name == "chord" || els[i][j].children[k].dataset.name == "lyric"){
+                      const t = els[i][j].children[k].textContent.toLowerCase()
+                      if(t == "push" || t == "r" || t == "]["){
+                        needPush = true
+                      }else if(t == "pull" || t == "b" || t == "[]"){
+                        needPull = true
+                      }
+                    }
                     scales.push(handleKey(key, els[i][j].children[k].dataset.name))
                   }
                 }
@@ -359,7 +368,26 @@ B2 G2 A2 | G6 |]`
                 lastScales = pushArray.map((scale)=>scalePushMap[scale])
                 lastWay = "push"
                 pushCount++
-              } else {
+              } else if(needPull) {
+                pushCount = 0
+                pullArray.forEach((scale)=>{
+                  const k = scalePullMap[scale]
+                  parent.concertina[k] = "blue"
+                })
+                lastScales = pullArray.map((scale)=>scalePullMap[scale])
+                lastWay = "pull"
+                pullCount++;
+              }else if(needPush) {
+                pullCount = 0
+                pushArray.forEach((scale)=>{
+                  const k = scalePushMap[scale]
+                  parent.concertina[k] = "red"
+                })
+                lastScales = pushArray.map((scale)=>scalePushMap[scale])
+                lastWay = "push"
+                pushCount++
+
+              }else{
                 if((lastWay === "pull" && pullCount < 5) || pushCount > 4){
                   pushCount = 0
                   pullArray.forEach((scale)=>{
