@@ -44,7 +44,7 @@ import BasicModal from "./components/BasicModal.vue";
           </a>
           </template>
 
-          <v-card max-height="150" max-width="40">
+          <v-card min-height="150" min-width="35">
             <div id="bpm-text">{{bpm}}%</div>
             <v-slider
               v-model="bpm"
@@ -495,6 +495,8 @@ path {
 }
 #bpm-text{
   font-size: 12px;
+  display: flex;
+  justify-content: center;
 }
 
 </style>
