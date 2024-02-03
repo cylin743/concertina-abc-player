@@ -1,36 +1,65 @@
 <script setup>
 import ShareIcon from './components/icons/IconShare.vue'
+import SpeedIcon from './components/icons/IconSpeed.vue'
 import BasicModal from "./components/BasicModal.vue";
 </script>
 
 <template>
   <div id="app" class="container padding-xxxs">
     <div class="text-center margin-bottom-sm">
-      <h1>Concertina Player</h1>
+      <h1>Anglo Concertina Player</h1>
     </div>
-    <div class="accordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-            Editor
-          </button>
-        </h2>
-        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+    <v-expansion-panels v-model="panels">
+      <v-expansion-panel
+        title="Editor"
+        value="editor"
+      >
+        <v-expansion-panel-text>
           <div class="accordion-body">
-            <textarea
+            <v-textarea
+              label="Text"
               spellcheck="false"
               v-model="tune"
               class="note-input margin-top-sm padding-x-md"
               style="width: 100%"
               rows="10"
-            ></textarea>
+              fluid
+            ></v-textarea>
           </div>
-        </div>
-      </div>
-    </div>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
     
     <div id="player">
       <div id="main-midi"></div>
+      <div id="speed">
+        <v-menu
+          v-model="menu"
+          :close-on-content-click="false"
+          location="top"
+        >
+          <template v-slot:activator="{ props }">
+            <a v-bind="props" >
+            <SpeedIcon class="share-icon" color="white" />
+          </a>
+          </template>
+
+          <v-card max-height="150" max-width="40">
+            <div id="bpm-text">{{bpm}}%</div>
+            <v-slider
+              v-model="bpm"
+              direction="vertical"
+              track-size="2"
+              tick-size="5"
+              thumb-size="10"
+              :step="1"
+              variant="outlined"
+              v-on:end="sliderChange"
+            ></v-slider>
+            
+          </v-card>
+        </v-menu>
+      </div>
      <div class="share">
        <ShareIcon class="share-icon" v-on:click="showDialog = !showDialog"/>
      </div>
@@ -98,110 +127,23 @@ import BasicModal from "./components/BasicModal.vue";
 import abcjs from "abcjs";
 import 'abcjs/abcjs-audio.css';
 import { ref } from "vue";
-const scaleMap = {
-  "left":{
-    "push": {
-      "E,": "l1a",
-      "A,": "l2a",
-      "^C": "l3a",
-      "A": "l4a",
-      "^G": "l5a",
-      "C,": "l1",
-      "G,": "l2",
-      "C": "l3",
-      "E": "l4",
-      "G": "l5",
-      "B,": "l6",
-      "D": "l7",
-      "B": "l9",
-      "d": "l10",
-    },
-    "pull":{
-      "F,": "l1a",
-      "_B,": "l2a",
-      "^D": "l3a",
-      "G": "l4a",
-      "_B": "l5a",
-      "G,": "l1",
-      "B,": "l2",
-      "D": "l3",
-      "F": "l4",
-      "A": "l5",
-      "A,": "l6",
-      "^F": "l7",
-      "c": "l9",
-      "e": "l10",
-    }
-  },
-  "right":{
-    "push": {
-      "^c": "r1a",
-      "a": "r2a",
-      "^g": "r3a",
-      "^c'": "r4a",
-      "F'": "r5a",
-      "c": "r1",
-      "e": "r2",
-      "g": "r3",
-      "c'": "r4",
-      "e'": "r5",
-      "b": "r7",
-      "d'": "r8",
-      "g'": "r9",
-      "b'": "r10",
-    },
-    "pull":{
-      "^d": "r1a",
-      "g": "r2a",
-      "_b": "r3a",
-      "^d'": "r4a",
-      "a'": "r5a",
-      "B": "r1",
-      "d": "r2",
-      "f": "r3",
-      "b": "r5",
-      "^f": "r6",
-      "a": "r7",
-      "c'": "r8",
-      "e'": "r9",
-      "^f'": "r10",
-    }
-  }
-}
-var scalePush = Object.keys(scaleMap["right"]["push"]).concat(Object.keys(scaleMap["left"]["push"]))
-var scalePushMap = {}
-Object.keys(scaleMap["right"]["push"]).map(function(key){
-  scalePushMap[key] = scaleMap["right"]["push"][key]
-})
-Object.keys(scaleMap["left"]["push"]).map(function(key){
-  scalePushMap[key] = scaleMap["left"]["push"][key]
-})
-var scalePull = Object.keys(scaleMap["right"]["pull"]).concat(Object.keys(scaleMap["left"]["pull"]))
-var scalePullMap = {}
-Object.keys(scaleMap["right"]["pull"]).map(function(key){
-  scalePullMap[key] = scaleMap["right"]["pull"][key]
-})
-Object.keys(scaleMap["left"]["pull"]).map(function(key){
-  scalePullMap[key] = scaleMap["left"]["pull"][key]
-})
+import {dTune, scalePushList, scalePushMapping, scalePullList, scalePullMapping, getScaleAfterKeyConvert} from './components/Settings.vue'
+
 export default {
+    setup(){
+    },
     data() {
       const queryString = window.location.search;
       const urlParams = new URLSearchParams(queryString);
       const showDialog = ref(false);
-      let tune = `X: 3
-T:Happy Birthday to You
-M:3/4
-L:1/8
-Q:80
-K:G
-D>D | E2 D2 G2 | F4 D>D | E2 D2 A2 | G4 D>D | d2 B2 G2 | (F2 E2) c>c |
-B2 G2 A2 | G6 |]`
+      let tune = dTune
       if (urlParams.get('tune') !== null){
         tune = atob(urlParams.get('tune'));
       }
-      
       return {
+        panels:["editor"],
+        menu: false,
+        bpm: 100,
         control: null,
         tune: tune,
         constrolOpts: {
@@ -220,7 +162,7 @@ B2 G2 A2 | G6 |]`
           scale: 1,
         },
         link: `https://cylin743.github.io/concertina-abc-player/?tune=${encodeURIComponent(btoa(tune))}`,
-        concertina:{
+        concertina: {
           l1a: "#bbb",
           l2a: "#bbb",
           l3a: "#bbb",
@@ -252,12 +194,10 @@ B2 G2 A2 | G6 |]`
           r9: "#bbb",
           r10: "#bbb",
         }
-
       }
     },
     mounted: function () {
       this.load()
-      
 		},
     watch: {
       tune(v) {
@@ -266,6 +206,24 @@ B2 G2 A2 | G6 |]`
       },
     },
     methods: {
+      sliderChange(e){
+        this.control.pause()
+        this.load()
+      },
+      aBReplay(){
+        // console.log("predd")
+        // this.control.pause()
+        // this.control.play()
+        // this.control.seek(18, "seconds")
+      },
+      clickListener(abcElem, tuneNumber, classes, analysis, drag, mouseEvent){
+        var lastClicked = abcElem.midiPitches;
+			  if (!lastClicked)
+				  return;
+        abcjs.synth.playEvent(lastClicked, abcElem.midiGraceNotePitches, this.control.visualObj.millisecondsPerMeasure()).then(function (response) {
+			  }).catch(function (error) {
+			  });
+      },
       load(){
         const abcObj = abcjs.renderAbc('paper', this.tune, {
           scale: 1,
@@ -274,8 +232,8 @@ B2 G2 A2 | G6 |]`
           paddingright: 0,
           responsive: 'resize',
           oneSvgPerLine: true,
-          add_classes: true
-
+          add_classes: true,
+          clickListener: this.clickListener,
         });
         Object.keys(this.concertina).forEach((k)=>{
           this.concertina[k] = "#bbb"
@@ -284,45 +242,6 @@ B2 G2 A2 | G6 |]`
         const [visualObj] = abcObj
         var parent = this
 
-        var lastEls = [];
-        const handleKey = function(key, scale){
-          switch(key){
-            case 'D':
-              if(scale == "F"){
-                scale = "^F"
-              }
-              if(scale == "f"){
-                scale = "^f"
-              }
-              if(scale == "c"){
-                scale = "^c"
-              }
-              if(scale == "C"){
-                scale = "^C"
-              }
-              break
-            case 'G':
-              if(scale == "F"){
-                scale = "^F"
-              }
-              if(scale == "f"){
-                scale = "^f"
-              }
-              break
-            case 'F':
-              if(scale == "b"){
-                scale = "_b"
-              }
-              if(scale == "B"){
-                scale = "_B"
-              }
-              if(scale == "B,"){
-                scale = "_B,"
-              }
-              break
-          }
-          return scale
-        }
         var lastEls = [];
         var lastScales = [];
         var lastWay = "";
@@ -354,12 +273,12 @@ B2 G2 A2 | G6 |]`
                         needPull = true
                       }
                     }
-                    scales.push(handleKey(key, els[i][j].children[k].dataset.name))
+                    scales.push(getScaleAfterKeyConvert(key, els[i][j].children[k].dataset.name))
                   }
                 }
               }
-              const pushArray = scales.filter(value => scalePush.includes(value));
-              const pullArray = scales.filter(value => scalePull.includes(value));
+              const pushArray = scales.filter(value => scalePushList.includes(value));
+              const pullArray = scales.filter(value => scalePullList.includes(value));
 
               lastScales.forEach((k)=>{
                   parent.concertina[k] = "#bbb"
@@ -367,37 +286,37 @@ B2 G2 A2 | G6 |]`
               if(pullArray.length > pushArray.length){
                 pushCount = 0
                 pullArray.forEach((scale)=>{
-                  const k = scalePullMap[scale]
+                  const k = scalePullMapping[scale]
                   parent.concertina[k] = "blue"
                 })
-                lastScales = pullArray.map((scale)=>scalePullMap[scale])
+                lastScales = pullArray.map((scale)=>scalePullMapping[scale])
                 lastWay = "pull"
                 pullCount++;
               } else if(pullArray.length < pushArray.length) {
                 pullCount = 0
                 pushArray.forEach((scale)=>{
-                  const k = scalePushMap[scale]
+                  const k = scalePushMapping[scale]
                   parent.concertina[k] = "red"
                 })
-                lastScales = pushArray.map((scale)=>scalePushMap[scale])
+                lastScales = pushArray.map((scale)=>scalePushMapping[scale])
                 lastWay = "push"
                 pushCount++
               } else if(needPull) {
                 pushCount = 0
                 pullArray.forEach((scale)=>{
-                  const k = scalePullMap[scale]
+                  const k = scalePullMapping[scale]
                   parent.concertina[k] = "blue"
                 })
-                lastScales = pullArray.map((scale)=>scalePullMap[scale])
+                lastScales = pullArray.map((scale)=>scalePullMapping[scale])
                 lastWay = "pull"
                 pullCount++;
               }else if(needPush) {
                 pullCount = 0
                 pushArray.forEach((scale)=>{
-                  const k = scalePushMap[scale]
+                  const k = scalePushMapping[scale]
                   parent.concertina[k] = "red"
                 })
-                lastScales = pushArray.map((scale)=>scalePushMap[scale])
+                lastScales = pushArray.map((scale)=>scalePushMapping[scale])
                 lastWay = "push"
                 pushCount++
 
@@ -405,19 +324,19 @@ B2 G2 A2 | G6 |]`
                 if((lastWay === "pull" && pullCount < 5) || pushCount > 4){
                   pushCount = 0
                   pullArray.forEach((scale)=>{
-                    const k = scalePullMap[scale]
+                    const k = scalePullMapping[scale]
                     parent.concertina[k] = "blue"
                   })
-                  lastScales = pullArray.map((scale)=>scalePullMap[scale])
+                  lastScales = pullArray.map((scale)=>scalePullMapping[scale])
                   lastWay = "pull"
                   pullCount++;
                 }else{
                   pullCount = 0
                   pushArray.forEach((scale)=>{
-                    const k = scalePushMap[scale]
+                    const k = scalePushMapping[scale]
                     parent.concertina[k] = "red"
                   })
-                  lastScales = pushArray.map((scale)=>scalePushMap[scale])
+                  lastScales = pushArray.map((scale)=>scalePushMapping[scale])
                   lastWay = "push"
                   pushCount++
                 }
@@ -435,6 +354,10 @@ B2 G2 A2 | G6 |]`
               })
             }
             self.onBeat = function(beatNumber, totalBeats, totalTime) {
+              // console.log("t", beatNumber/totalBeats*totalTime/1000)
+              // if(beatNumber/totalBeats*totalTime/1000 > 10){
+              //   parent.control.seek(5, "seconds")
+              // }
             }
             self.onEvent = function(ev) {
               colorElements(ev.elements)
@@ -452,6 +375,7 @@ B2 G2 A2 | G6 |]`
         });
         this.control = synthControl;
         this.control.setTune(visualObj, false, this.constrolOpts);
+        this.control.setWarp(this.bpm);
         this.link = `https://cylin743.github.io/concertina-abc-player/?tune=${encodeURIComponent(btoa(this.tune))}`
       }
     },
@@ -461,7 +385,10 @@ B2 G2 A2 | G6 |]`
 </script>
 
 
-<style scoped>
+<style lang="scss">
+@forward 'vuetify/settings' with (
+  $slider-vertical-min-height: 100px,
+);
 html,
 body {
   font-size: 16px;
@@ -487,6 +414,7 @@ body {
 }
 #player {
   display: flex;
+  margin-top: 20px;
 
 }
 #main-midi{
@@ -530,8 +458,7 @@ path {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  
-
+  margin-top: 20px;
 }
 #concertina{
   margin: 10px 15px;
@@ -559,6 +486,15 @@ path {
   /* background-color: #bbb; */
   border-radius: 50%;
   display: inline-block;
+}
+.v-input__control{
+  min-height: 100px !important;
+}
+.abcjs-midi-tempo{
+  background-color: white !important;
+}
+#bpm-text{
+  font-size: 12px;
 }
 
 </style>
