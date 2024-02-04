@@ -17,7 +17,7 @@ import BasicModal from "./components/BasicModal.vue";
       >
         <v-expansion-panel-text>
           <div class="accordion-body">
-            <v-textarea
+            <textarea
               label="Text"
               spellcheck="false"
               v-model="tune"
@@ -25,7 +25,7 @@ import BasicModal from "./components/BasicModal.vue";
               style="width: 100%"
               rows="10"
               fluid
-            ></v-textarea>
+            ></textarea>
           </div>
         </v-expansion-panel-text>
       </v-expansion-panel>
@@ -35,7 +35,7 @@ import BasicModal from "./components/BasicModal.vue";
       <div id="main-midi"></div>
       <div id="speed">
         <v-menu
-          v-model="menu"
+          :open-on-click="true"
           :close-on-content-click="false"
           location="top center"
         >
@@ -82,7 +82,6 @@ import BasicModal from "./components/BasicModal.vue";
                   v-model="abRepeater.startValue"
                   class="form-control ab-text-input" 
                   placeholder="Start" 
-                  v-on:click="clickAB"
                   aria-label="Start">
                <span class="input-group-text ab-text-input-label">s</span>
               </div>
@@ -91,7 +90,6 @@ import BasicModal from "./components/BasicModal.vue";
                   class="form-control ab-text-input" 
                   v-model="abRepeater.endValue"
                   placeholder="End" 
-                  v-on:click="clickAB"
                   aria-label="End">
                <span class="input-group-text ab-text-input-label">s</span>
               </div>
@@ -189,11 +187,8 @@ export default {
       return {
         panels:["editor"],
         abRepeater: {
-          startClick: false,
           startValue: null,
-          endClick: false,
           endValue: null,
-          scaleClick: false,
           enabled: false,
         },
         repeat:false,
@@ -273,27 +268,12 @@ export default {
       aBReplay(ev){
       },
       clickAB(ev){
-        if(ev.target.ariaLabel=="Start"){
-          this.abRepeater.startClick = true
-          this.abRepeater.endClick = false
-        }else{
-          this.abRepeater.endClick = true
-          this.abRepeater.startClick = false
-        }
       },
       clickListener(abcElem, tuneNumber, classes, analysis, drag, mouseEvent){
         var lastClicked = abcElem.midiPitches;
 			  if (!lastClicked)
 				  return;
-        console.log(abcElem.currentTrackMilliseconds)
-        this.abRepeater.scaleClick = true
-        if(this.abRepeater.startClick){
-          this.abRepeater.startValue = abcElem.currentTrackMilliseconds / 1000
-          this.abRepeater.startClick = false
-        }else if(this.abRepeater.endClick){
-          this.abRepeater.endValue = abcElem.currentTrackMilliseconds / 1000
-          this.abRepeater.endClick = false
-        }
+        console.log(abcElem)
         abcjs.synth.playEvent(lastClicked, abcElem.midiGraceNotePitches, this.control.visualObj.millisecondsPerMeasure()).then(function (response) {
 			  }).catch(function (error) {
 			  });
@@ -424,8 +404,6 @@ export default {
             }
             self.onStop = function() {
             }
-            self.onReady = function() {
-            }
             self.onFinished = function() {
               Object.keys(parent.concertina).forEach((k)=>{
                 parent.concertina[k] = "#bbb"
@@ -468,8 +446,6 @@ export default {
         this.control.setTune(visualObj, false, this.constrolOpts);
         this.control.setWarp(this.bpm);
         this.link = `https://cylin743.github.io/concertina-abc-player/?tune=${encodeURIComponent(btoa(this.tune))}`
-        this.abRepeater.startClick = false
-        this.abRepeater.endClick = false
         this.abRepeater.startValue = null
         this.abRepeater.endValue = null
       }
@@ -494,8 +470,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 .note-input {
+  border: 1px solid black;
   line-height: 1.65;
-  caret-color: orange;
   background-color: #fff;
   background-size: 100% 1.65em;
 }
