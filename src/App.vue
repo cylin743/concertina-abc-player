@@ -1,6 +1,7 @@
 <script setup>
 import ShareIcon from './components/icons/IconShare.vue'
 import SpeedIcon from './components/icons/IconSpeed.vue'
+import ABIcon from './components/icons/IconAB.vue'
 import BasicModal from "./components/BasicModal.vue";
 </script>
 
@@ -16,7 +17,7 @@ import BasicModal from "./components/BasicModal.vue";
       >
         <v-expansion-panel-text>
           <div class="accordion-body">
-            <v-textarea
+            <textarea
               label="Text"
               spellcheck="false"
               v-model="tune"
@@ -24,7 +25,7 @@ import BasicModal from "./components/BasicModal.vue";
               style="width: 100%"
               rows="10"
               fluid
-            ></v-textarea>
+            ></textarea>
           </div>
         </v-expansion-panel-text>
       </v-expansion-panel>
@@ -34,17 +35,17 @@ import BasicModal from "./components/BasicModal.vue";
       <div id="main-midi"></div>
       <div id="speed">
         <v-menu
-          v-model="menu"
+          :open-on-click="true"
           :close-on-content-click="false"
-          location="top"
+          location="top center"
         >
           <template v-slot:activator="{ props }">
             <a v-bind="props" >
-            <SpeedIcon class="share-icon" color="white" />
+            <SpeedIcon class="speed-icon" color="" />
           </a>
           </template>
 
-          <v-card min-height="150" min-width="35">
+          <v-card min-height="150" min-width="45">
             <div id="bpm-text">{{bpm}}%</div>
             <v-slider
               v-model="bpm"
@@ -57,6 +58,49 @@ import BasicModal from "./components/BasicModal.vue";
               v-on:end="sliderChange"
             ></v-slider>
             
+          </v-card>
+        </v-menu>
+      </div>
+      <div id="speed">
+        <v-menu
+          :open-on-click="true"
+          :close-on-content-click="false"
+          :no-click-animation="true"
+          :persistent="true"
+          location="bottom center"
+        >
+          <template v-slot:activator="{ props }">
+            <a v-bind="props" >
+              <ABIcon class="ab-icon" v-on:click="clickABMenu"/>
+            </a>
+          </template>
+
+          <v-card class="ab-menu" min-height="60" min-width="250">
+            <div class="ab-input">
+              <div class="input-group mb-3 ab-input-group">
+               <input type="text" 
+                  v-model="abRepeater.startValue"
+                  class="form-control ab-text-input" 
+                  placeholder="Start" 
+                  aria-label="Start">
+               <span class="input-group-text ab-text-input-label">s</span>
+              </div>
+              <div class="input-group mb-3 ab-input-group">
+               <input type="text" 
+                  class="form-control ab-text-input" 
+                  v-model="abRepeater.endValue"
+                  placeholder="End" 
+                  aria-label="End">
+               <span class="input-group-text ab-text-input-label">s</span>
+              </div>
+            </div>
+            <div class="ab-check">
+              <input class="form-check-input" type="checkbox" v-model="abRepeater.enabled" id="flexCheckDefault">
+              <label class="form-check-label ab-check-label" for="flexCheckDefault">
+                Enable A-B
+              </label>
+              
+            </div>
           </v-card>
         </v-menu>
       </div>
@@ -142,7 +186,14 @@ export default {
       }
       return {
         panels:["editor"],
+        abRepeater: {
+          startValue: null,
+          endValue: null,
+          enabled: false,
+        },
+        repeat:false,
         menu: false,
+        abMenu: false,
         bpm: 100,
         control: null,
         tune: tune,
@@ -210,21 +261,26 @@ export default {
         this.control.pause()
         this.load()
       },
-      aBReplay(){
-        // console.log("predd")
-        // this.control.pause()
-        // this.control.play()
-        // this.control.seek(18, "seconds")
+      clickABMenu(){
+        this.abRepeater.startClick = false
+        this.abRepeater.endClick = false
+      },
+      aBReplay(ev){
+      },
+      clickAB(ev){
       },
       clickListener(abcElem, tuneNumber, classes, analysis, drag, mouseEvent){
         var lastClicked = abcElem.midiPitches;
 			  if (!lastClicked)
 				  return;
+        console.log(abcElem)
         abcjs.synth.playEvent(lastClicked, abcElem.midiGraceNotePitches, this.control.visualObj.millisecondsPerMeasure()).then(function (response) {
 			  }).catch(function (error) {
 			  });
       },
       load(){
+        this.abRepeater.startClick = false
+        this.abRepeater.endClick = false
         const abcObj = abcjs.renderAbc('paper', this.tune, {
           scale: 1,
           staffwidth: 700,
@@ -263,7 +319,7 @@ export default {
               var scales = []
               for (i = 0; i < els.length; i++) {
                 for (j = 0; j < els[i].length; j++) {
-                  els[i][j].style.color = "red"
+                  els[i][j].style.color = "brown"
                   for (var k = 0; k < els[i][j].children.length; k ++){
                     if(els[i][j].children[k].dataset.name == "chord" || els[i][j].children[k].dataset.name == "lyric"){
                       const t = els[i][j].children[k].textContent.toLowerCase()
@@ -354,10 +410,23 @@ export default {
               })
             }
             self.onBeat = function(beatNumber, totalBeats, totalTime) {
-              // console.log("t", beatNumber/totalBeats*totalTime/1000)
-              // if(beatNumber/totalBeats*totalTime/1000 > 10){
-              //   parent.control.seek(5, "seconds")
-              // }
+              if(parent.abRepeater.enabled && (Number(parent.abRepeater.startValue) < Number(parent.abRepeater.endValue))){
+                const beatSec = beatNumber/totalBeats*totalTime/1000
+                if(Number(parent.abRepeater.startValue) != 0){
+                  if(beatSec < parent.abRepeater.startValue){
+                    parent.control.seek(parent.abRepeater.startValue, "seconds")
+                  }
+                }
+                if(Number(parent.abRepeater.endValue) != 0){
+                  if(beatSec >= parent.abRepeater.endValue){
+                    if(parent.control.isLooping){
+                      parent.control.seek(Number(parent.abRepeater.startValue), "seconds")
+                    }else{
+                      parent.control.pause()
+                    }
+                  }
+                }
+              }
             }
             self.onEvent = function(ev) {
               colorElements(ev.elements)
@@ -377,6 +446,8 @@ export default {
         this.control.setTune(visualObj, false, this.constrolOpts);
         this.control.setWarp(this.bpm);
         this.link = `https://cylin743.github.io/concertina-abc-player/?tune=${encodeURIComponent(btoa(this.tune))}`
+        this.abRepeater.startValue = null
+        this.abRepeater.endValue = null
       }
     },
     created() {
@@ -399,8 +470,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 .note-input {
+  border: 1px solid black;
   line-height: 1.65;
-  caret-color: orange;
   background-color: #fff;
   background-size: 100% 1.65em;
 }
@@ -418,11 +489,32 @@ body {
 
 }
 #main-midi{
-  width: 100%
+  width: 100%;
+  height: 35px;
+}
+.abcjs-inline-audio{
+  height: 35px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 5px;
 }
 .share-icon {
-  color: red;
   height: 100%;
+  cursor: pointer;
+}
+.speed-icon {
+  color: white;
+  height: 100%;
+  background:#424242;
+  cursor: pointer;
+}
+.ab-icon{
+  color: white;
+  height: 100%;
+  background:#424242;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
   cursor: pointer;
 }
 .share {
@@ -497,6 +589,42 @@ path {
   font-size: 12px;
   display: flex;
   justify-content: center;
+}
+.ab-menu{
+  font-size: 12px;
+}
+.ab-input{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin: 10px;
+}
+.ab-text-input-label {
+  height: 20px;
+  width: 20px;
+}
+.ab-text-input {
+  width: 50px !important;
+  height: 20px;
+}
+.ab-input-group {
+  width: 100px !important;
+  margin: 10px;
+  height: 20px;
+  font-size: 12px;
+}
+.ab-input-group input{
+  font-size: 12px;
+  max-width: 70px;
+}
+.ab-check{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 5px;
+}
+.ab-check-label{
+  margin-left: 5px;
 }
 
 </style>
