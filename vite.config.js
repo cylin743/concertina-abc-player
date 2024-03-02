@@ -6,6 +6,7 @@ import vue from '@vitejs/plugin-vue'
 // https://vitejs.dev/config/
 export default defineConfig({
   base:'/concertina-abc-player',
+  publicPath:'/concertina-abc-player',
   plugins: [vue()],
   build:{
     outDir: "./docs"
