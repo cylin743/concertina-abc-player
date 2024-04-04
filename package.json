@@ -1,37 +1,34 @@
 {
   "name": "concertina-abc-player",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build  && node ./ghpages.js",
-    "preview": "vite preview",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "deploy": "rm -rf node_modules/.cache && next build && touch out/.nojekyll && git add out/ && git commit -m \"Deploy Next.js to gh-pages\" && git subtree push --prefix out origin gh-pages"
   },
   "dependencies": {
-    "@popperjs/core": "^2.11.7",
-    "abcjs": "^6.2.3",
-    "axios": "^1.3.5",
-    "bootstrap": "^5.0.2",
-    "element-plus": "^2.3.4",
-    "vue": "^3.2.47",
-    "vue-router": "^4.3.0",
-    "vuejs-smart-table": "^1.0.0-beta.6",
-    "vuetify": "^3.5.2",
-    "vuex": "^4.1.0"
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.14",
+    "@mui/material": "^5.15.14",
+    "abcjs": "^6.3.0",
+    "lz-string": "^1.5.0",
+    "next": "14.1.4",
+    "react": "^18",
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.2.0",
-    "@vitejs/plugin-vue": "^4.0.0",
-    "@vue/compiler-sfc": "^3.2.47",
-    "@vue/eslint-config-prettier": "^7.1.0",
-    "eslint": "^8.34.0",
-    "eslint-plugin-vue": "^9.9.0",
-    "gh-pages": "^6.1.1",
-    "prettier": "^2.8.4",
-    "sass": "^1.70.0",
-    "sass-loader": "^14.1.0",
-    "vite": "^4.1.4"
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
   }
 }
