@@ -28,27 +28,48 @@ export default function Home() {
     navigator.clipboard.writeText(sharedLink)
   }
   const [tablatures, setTablatures] = useState<any>([])
-  
+  function isJson(str:string) {
+    try {
+        JSON.parse(str)
+    } catch (e) {
+        return false
+    }
+    return true
+  }
   
   
   useEffect(() => {
-    var tabsInfo = JSON.parse(tabs)
-    var tempTablatures = []
-    for(var i = 0; i < tabsInfo.length; i++) {
-      tempTablatures.push(
-        (
-          <Tablature input={tabsInfo[i]} style={{
-          size: "15px",
-          width: "200px",
-          border: "1px solid"
-        }} key={i}/>
-        )
-        )
-    }
-    setTablatures(tempTablatures)
-    var tabString = LZString.compressToBase64(JSON.stringify(tabsInfo));
-    setSharedLink(`https://cylin743.github.io/concertina-abc-player/tablature?tabs=${encodeURIComponent(tabString)}`)
+    if(isJson(tabs)){
+      var tabsInfo = JSON.parse(tabs)
+      var tempTablatures = []
+      for(var i = 0; i < tabsInfo.length; i++) {
+        tempTablatures.push(
+          (
+            <div title={`${i}`} onClick={(e) => {
+              if(tabsInfo[e.currentTarget.title].def == "push"){
+                tabsInfo[e.currentTarget.title].def = "pull"
+              }else if(tabsInfo[e.currentTarget.title].def == "pull"){
+                tabsInfo[e.currentTarget.title].def = "push"
+              }
+              setTabs(JSON.stringify(tabsInfo, undefined, 2))
+            }}>
+              <Tablature input={tabsInfo[i]} style={{
+                size: "15px",
+                width: "200px",
+                border: "1px solid"
+              }} key={i} />
 
+            </div>
+            
+          )
+          )
+      }
+      setTablatures(tempTablatures)
+      var tabString = LZString.compressToBase64(JSON.stringify(tabsInfo));
+      setSharedLink(`https://cylin743.github.io/concertina-abc-player/tablature?tabs=${encodeURIComponent(tabString)}`)
+
+    }
+    
   }, [tabs])
 
   
