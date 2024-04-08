@@ -123,6 +123,81 @@ const tablatureMapping:any = {
                   scale = "_B,"
                 }
                 break
+              case 'Bb':
+                if(scale == "=b"){
+                  scale = "b"
+                }
+                else if(scale == "=B"){
+                  scale = "B"
+                }
+                else if(scale == "=e"){
+                  scale = "e"
+                }
+                else if(scale == "=E"){
+                  scale = "E"
+                }
+                else if(scale == "b"){
+                  scale = "_b"
+                }
+                else if(scale == "B"){
+                  scale = "_B"
+                }
+                else if(scale == "e"){
+                  scale = "^d"
+                }
+                else if(scale == "E"){
+                  scale = "^D"
+                }
+                break
+              case 'Ab':
+                if(scale == "A"){
+                  scale = "^G"
+                }else if(scale == "a"){
+                  scale = "^g"
+                }
+                else if(scale == "b"){
+                  scale = "_b"
+                }
+                else if(scale == "B"){
+                  scale = "_B"
+                }
+                else if(scale == "D"){
+                  scale = "^C"
+                }
+                else if(scale == "d"){
+                  scale = "^c"
+                }
+                else if(scale == "e"){
+                  scale = "^d"
+                }
+                else if(scale == "E"){
+                  scale = "^D"
+                }
+                else if(scale == "=A"){
+                  scale = "A"
+                }
+                else if(scale == "=a"){
+                  scale = "a"
+                }
+                else if(scale == "=b"){
+                  scale = "b"
+                }
+                else if(scale == "=B"){
+                  scale = "B"
+                }
+                else if(scale == "=D"){
+                  scale = "D"
+                }
+                else if(scale == "=d"){
+                  scale = "d"
+                }
+                else if(scale == "=e"){
+                  scale = "e"
+                }
+                else if(scale == "=E"){
+                  scale = "E"
+                }
+                break
             }
             return scale
 }

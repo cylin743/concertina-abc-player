@@ -57,10 +57,12 @@ export default function Home() {
     public lastScales: any;
     public lastEls: any;
     public lastWay = ""
-    constructor(){
+    public k = "C"
+    constructor(key:string){
       this.lastScales = []
       this.lastEls = []
       this.lastWay = ""
+      this.k =key
     }
     colorElements(els:any) {
       var pushCount = 0;
@@ -86,7 +88,7 @@ export default function Home() {
                 needPull = true
               }
             }
-            s.push(getScaleAfterKeyConvert(key, els[i][j].children[k].dataset.name))
+            s.push(getScaleAfterKeyConvert(this.k, els[i][j].children[k].dataset.name))
           }
         }
       }
@@ -168,7 +170,7 @@ export default function Home() {
       synthController.pause()
     }
     compressedTune = LZString.compressToBase64(tune);
-    setSharedLink(`https://cylin743.github.io/shamisen-player/?t=${encodeURIComponent(compressedTune)}`)
+    setSharedLink(`https://cylin743.github.io/concertina-abc-player/?t=${encodeURIComponent(compressedTune)}`)
     // notesInfo = NoteParser(tune)
     const abcObj = abcjs.renderAbc('paper', tune, {
       scale: 1,
@@ -180,26 +182,26 @@ export default function Home() {
       add_classes: true,
     });
     const [visualObj] = abcObj
-    var cursorControl = new CursorControl();
-    var synthControl = new abcjs.synth.SynthController()
-    synthControl.load('#main-midi', cursorControl, {
-      displayRestart: true,
-      displayPlay: true,
-      displayProgress: true,
-      displayLoop: true,
-      displayWarp: true,
-      showCursor: true,
-    })
-    synthControl.setTune(visualObj, false, {
-      soundFontUrl: 'https://gleitz.github.io/midi-js-soundfonts/MusyngKite/',
-      programOffsets:{
-      },
-      millisecondsPerMeasure:1000,
-      program: 21,
-    });
-    setSynthController(synthControl)
+    
     try {
-      setKey(abcObj[0].lines[0].staff[0].key.root)
+      var cursorControl = new CursorControl(`${abcObj[0].lines[0].staff[0].key.root}${abcObj[0].lines[0].staff[0].key.acc}`);
+      var synthControl = new abcjs.synth.SynthController()
+      synthControl.load('#main-midi', cursorControl, {
+        displayRestart: true,
+        displayPlay: true,
+        displayProgress: true,
+        displayLoop: true,
+        displayWarp: true,
+        showCursor: true,
+      })
+      synthControl.setTune(visualObj, false, {
+        soundFontUrl: 'https://gleitz.github.io/midi-js-soundfonts/MusyngKite/',
+        programOffsets:{
+        },
+        millisecondsPerMeasure:1000,
+        program: 21,
+      });
+      setSynthController(synthControl)
       var timingCallbacks = new abcjs.TimingCallbacks(visualObj, {});
       var tunesSet = []
       var needPull = false
@@ -222,7 +224,8 @@ export default function Home() {
             }
             var datastring = timingCallbacks.noteTimings[i].elements[v][0].children[k].dataset.name
             if(datastring.length <= 3){
-              var scale = getScaleAfterKeyConvert(abcObj[0].lines[0].staff[0].key.root, datastring)
+              var tkey = `${abcObj[0].lines[0].staff[0].key.root}${abcObj[0].lines[0].staff[0].key.acc}`
+              var scale = getScaleAfterKeyConvert(tkey, datastring)
               tuneSet.push(scale)
             }
           }
