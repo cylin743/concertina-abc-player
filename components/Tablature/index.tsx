@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getScaleAfterKeyConvert, scalePushMapping, scalePullMapping, scalePushList, scalePullList } from "./setting"
+import { getScaleAfterKeyConvert, scalePushMapping, scalePullMapping, scalePushMappingSec, scalePullMappingSec, scalePushList, scalePullList } from "./setting"
 
 
 function Tablature(props:{ input: {
@@ -115,7 +115,13 @@ function Tablature(props:{ input: {
         if(props.input.scales){
             for(var i = 0; i < props.input.scales.length; i++){
                 var scale:string = props.input.scales[i]
-                if(props.input.def == "push"){
+                if(props.input.def == "push2"){
+                    var k:string = scalePushMappingSec[scale]
+                    temp[k] = "red"
+                }else if(props.input.def == "pull2"){
+                    const k = scalePullMappingSec[scale]
+                    temp[k] = "blue"
+                }else if(props.input.def == "push"){
                     var k:string = scalePushMapping[scale]
                     temp[k] = "red"
                 }else{

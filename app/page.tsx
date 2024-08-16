@@ -69,6 +69,8 @@ export default function Home() {
       var pullCount = 0;
       var needPull = false
       var needPush = false
+      var pushDef = "push"
+      var pullDef = "pull"
       var tabInfo = {}
       for (var i = 0; i < this.lastEls.length; i++) {
         for (var j = 0; j < this.lastEls[i].length; j++) {
@@ -86,12 +88,19 @@ export default function Home() {
                 needPush = true
               }else if(t == "pull" || t == "b" || t == "[]"){
                 needPull = true
+              }else if(t == "][2"){
+                needPush = true
+                pushDef = "push2"
+              }else if(t == "[]2"){
+                needPull = true
+                pullDef = "pull2"
               }
             }
             s.push(getScaleAfterKeyConvert(this.k, els[i][j].children[k].dataset.name))
           }
         }
       }
+
       const pushArray = s.filter(value => scalePushList.includes(value));
       const pullArray = s.filter(value => scalePullList.includes(value));
     
@@ -99,7 +108,7 @@ export default function Home() {
         pushCount = 0
         this.lastWay = "pull"
         tabInfo = {
-          def: "pull",
+          def: pullDef,
           scales: pullArray
         }
         pullCount++;
@@ -107,7 +116,7 @@ export default function Home() {
         pullCount = 0
         this.lastWay = "push"
         tabInfo = {
-          def: "push",
+          def: pushDef,
           scales: pushArray
         }
         pushCount++
@@ -115,7 +124,7 @@ export default function Home() {
         pushCount = 0
         this.lastWay = "pull"
         tabInfo = {
-          def: "pull",
+          def: pullDef,
           scales: pullArray
         }
         pullCount++;
@@ -123,7 +132,7 @@ export default function Home() {
         pullCount = 0
         this.lastWay = "push"
         tabInfo = {
-          def: "push",
+          def: pushDef,
           scales: pushArray
         }
         pushCount++
@@ -133,7 +142,7 @@ export default function Home() {
           pushCount = 0
           this.lastWay = "pull"
           tabInfo = {
-            def: "pull",
+            def: pullDef,
             scales: pullArray
           }
           pullCount++;
@@ -141,7 +150,7 @@ export default function Home() {
           pullCount = 0
           this.lastWay = "push"
           tabInfo = {
-            def: "push",
+            def: pushDef,
             scales: pushArray
           }
           pushCount++
@@ -207,6 +216,8 @@ export default function Home() {
       var needPull = false
       var needPush = false
       var lastWay = "";
+      var pushDef = "push"
+      var pullDef = "pull"
       var pushCount = 0;
       var pullCount = 0;
       for(var i = 0; i < timingCallbacks.noteTimings.length; i++){
@@ -221,6 +232,12 @@ export default function Home() {
               needPush = true
             }else if(t == "pull" || t == "b" || t == "[]"){
               needPull = true
+            }else if(t == "][2"){
+              needPush = true
+              pushDef = "push2"
+            }else if(t == "[]2"){
+              needPull = true
+              pullDef = "pull2"
             }
             var datastring = timingCallbacks.noteTimings[i].elements[v][0].children[k].dataset.name
             if(datastring.length <= 3){
@@ -241,7 +258,7 @@ export default function Home() {
           pullCount++;
           tunesSet.push({
                 "scales": pullArray,
-                "def": "pull"
+                "def": pullDef
               })
         }else if(pullArray.length < pushArray.length) {
           pullCount = 0
@@ -249,7 +266,7 @@ export default function Home() {
           pushCount++;
           tunesSet.push({
                 "scales": pushArray,
-                "def": "push"
+                "def": pushDef
               })
         }else if(needPull) {
           pushCount = 0
@@ -257,7 +274,7 @@ export default function Home() {
           pullCount++;
           tunesSet.push({
                 "scales": pullArray,
-                "def": "pull"
+                "def": pullDef
               })
         }else if(needPush) {
           pullCount = 0
@@ -265,7 +282,7 @@ export default function Home() {
           pushCount++;
           tunesSet.push({
                 "scales": pushArray,
-                "def": "push"
+                "def": pushDef
               })
         }else{
           if((lastWay === "pull" && pullCount < 5) || pushCount > 4){
@@ -274,7 +291,7 @@ export default function Home() {
             pullCount++;
             tunesSet.push({
                 "scales": pullArray,
-                "def": "pull"
+                "def": pullDef
               })
           }else{
             pullCount = 0
@@ -282,7 +299,7 @@ export default function Home() {
             pushCount++;
             tunesSet.push({
                 "scales": pushArray,
-                "def": "push"
+                "def": pushDef
               })
           }
         }
